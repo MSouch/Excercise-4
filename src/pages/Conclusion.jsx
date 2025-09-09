@@ -112,10 +112,12 @@ const Conclusion = () => {
         const ctx = canvas.getContext('2d')
         ctx.drawImage(img, 0, 0)
         const dataUrl = canvas.toDataURL('image/png')
-        const displayWidth = 55
+        // Slightly smaller to avoid overlap with header
+        const displayWidth = 44
         const aspect = img.naturalHeight / img.naturalWidth
         const displayHeight = displayWidth * aspect
-        pdf.addImage(dataUrl, 'PNG', 20, 18, displayWidth, displayHeight)
+        // Position a bit higher-left and above header baseline
+        pdf.addImage(dataUrl, 'PNG', 14, 12, displayWidth, displayHeight)
       } catch (e) {
         console.warn('Logo load failed; continuing without embedded image', e)
         pdf.setDrawColor(200, 200, 200)
@@ -151,10 +153,10 @@ const Conclusion = () => {
         pdf.text(`Issued to: ${userEmail}`, pageWidth - 15, pageHeight - 30, {align: 'right'})
       }
 
-      // Copyright
+  // Copyright (move up so it's not inside the blue border)
       pdf.setFontSize(8)
       pdf.setTextColor(107, 114, 128)
-      pdf.text('© 2025 AP-Learning Systems, a Division of AP-Networks LLC - ALL RIGHTS RESERVED', pageWidth / 2, pageHeight - 10, {align: 'center'})
+  pdf.text('© 2025 AP-Learning Systems, a Division of AP-Networks LLC - ALL RIGHTS RESERVED', pageWidth / 2, pageHeight - 14, {align: 'center'})
 
       console.log('PDF content generated successfully')
 
