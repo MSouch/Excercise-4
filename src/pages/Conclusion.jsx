@@ -7,7 +7,6 @@ import {useAuth} from '../hooks/useAuth.jsx'
 import SafeIcon from '../common/SafeIcon.jsx'
 import * as FiIcons from 'react-icons/fi'
 import { FaArrowDown, FaArrowUp, FaLinkedin, FaFacebook, FaXTwitter } from 'react-icons/fa6'
-import {jsPDF} from 'jspdf'
 import Logo from '../assets/AP-Networks-LearningSytems-Full-DivOf (6).png'
 
 const {FiAward, FiDownload, FiShare2, FiHome, FiTarget, FiTrendingUp} = FiIcons
@@ -18,6 +17,7 @@ const Conclusion = () => {
   const [certificateUrl, setCertificateUrl] = useState(null)
   const [generating, setGenerating] = useState(false)
   const [certificateGenerated, setCertificateGenerated] = useState(false)
+  const [certificateError, setCertificateError] = useState(null)
 
   const calculateScoreLevel = () => {
     const {completedChallenges, totalChallenges} = progress
@@ -30,27 +30,25 @@ const Conclusion = () => {
   const generateCertificate = async () => {
     console.log('Starting certificate generation...')
     setGenerating(true)
+    setCertificateError(null)
     
     try {
-      console.log('Creating jsPDF instance...')
-      const pdf = new jsPDF({
-        orientation: 'landscape',
-        unit: 'mm',
-        format: 'a4'
-      })
+      // Dynamically import jsPDF per convention
+      const { jsPDF } = await import('jspdf')
+      const pdf = new jsPDF('landscape')
       
-      const pageWidth = pdf.internal.pageSize.getWidth()
-      const pageHeight = pdf.internal.pageSize.getHeight()
+      const pageWidth = pdf.internal.pageSize.width
+      const pageHeight = pdf.internal.pageSize.height
       console.log('PDF dimensions:', {pageWidth, pageHeight})
 
       // Background
       pdf.setFillColor(248, 250, 252)
       pdf.rect(0, 0, pageWidth, pageHeight, 'F')
 
-      // Main Border
-      pdf.setDrawColor(59, 130, 246)
-      pdf.setLineWidth(2)
-      pdf.rect(5, 5, pageWidth - 10, pageHeight - 10)
+  // Main Border
+  pdf.setDrawColor(59, 130, 246)
+  pdf.setLineWidth(3)
+  pdf.rect(10, 10, pageWidth - 20, pageHeight - 20)
 
   // Header
       pdf.setFontSize(28)
@@ -64,7 +62,7 @@ const Conclusion = () => {
       pdf.setFont('helvetica', 'normal')
       pdf.text('Reliability Navigator Training Simulation', pageWidth / 2, 45, {align: 'center'})
 
-      // Achievement text
+  // Achievement text
       pdf.setFontSize(16)
       pdf.setTextColor(17, 24, 39)
       pdf.text('This certifies that', pageWidth / 2, 65, {align: 'center'})
@@ -100,27 +98,32 @@ const Conclusion = () => {
       })
       pdf.text(`Completed on ${date}`, pageWidth / 2, 155, {align: 'center'})
 
-      // Load and add AP Learning Systems logo
+      // Add AP Learning Systems logo (top-left)
       try {
         const img = new Image()
-        const dataUrl = await new Promise((resolve, reject) => {
-          img.onload = () => {
-            const canvas = document.createElement('canvas')
-            canvas.width = img.width
-            canvas.height = img.height
-            const ctx = canvas.getContext('2d')
-            ctx.drawImage(img, 0, 0)
-            resolve(canvas.toDataURL('image/png'))
-          }
-          img.onerror = reject
-          img.src = Logo
+        img.src = Logo
+        await new Promise((res, rej) => {
+          img.onload = () => res()
+          img.onerror = (e) => rej(e)
         })
-        // Place logo above company text
-        const logoWidth = 60
-        const logoHeight = (img.height / img.width) * logoWidth
-        pdf.addImage(dataUrl, 'PNG', pageWidth/2 - logoWidth/2, 165 - logoHeight - 5, logoWidth, logoHeight)
+        const canvas = document.createElement('canvas')
+        canvas.width = img.naturalWidth
+        canvas.height = img.naturalHeight
+        const ctx = canvas.getContext('2d')
+        ctx.drawImage(img, 0, 0)
+        const dataUrl = canvas.toDataURL('image/png')
+        const displayWidth = 55
+        const aspect = img.naturalHeight / img.naturalWidth
+        const displayHeight = displayWidth * aspect
+        pdf.addImage(dataUrl, 'PNG', 20, 18, displayWidth, displayHeight)
       } catch (e) {
         console.warn('Logo load failed; continuing without embedded image', e)
+        pdf.setDrawColor(200, 200, 200)
+        pdf.setLineWidth(1)
+        pdf.rect(20, 20, 55, 25)
+        pdf.setFontSize(8)
+        pdf.setTextColor(150, 150, 150)
+        pdf.text('APLS LOGO', 25, 35, { align: 'left' })
       }
 
       // Company info
@@ -175,11 +178,11 @@ const Conclusion = () => {
         url: url
       }
       localStorage.setItem('reliabilityNavigatorCertificate', JSON.stringify(certificateData))
-      console.log('Certificate data saved to localStorage')
+  console.log('Certificate data saved to localStorage')
 
     } catch (error) {
       console.error('Error generating certificate:', error)
-      alert('There was an error generating your certificate. Please try refreshing the page and trying again.')
+  setCertificateError('Error generating certificate. Please retry.')
     } finally {
       setGenerating(false)
     }
@@ -258,7 +261,7 @@ const Conclusion = () => {
               <SafeIcon icon={FiAward} className="w-10 h-10 text-white" />
             </div>
             <h1 className="text-4xl font-bold text-gray-900 mb-4">
-              Congratulations, Communication Navigator!
+              Congratulations, Reliability Navigator!
             </h1>
             <p className="text-xl text-gray-600 max-w-3xl mx-auto">
               You've successfully completed Reliability Navigator and proven your mastery of reliability planning fundamentals. Your systematic approach demonstrates the advanced capabilities that distinguish expert maintenance planners.
@@ -373,8 +376,16 @@ const Conclusion = () => {
 
               <div className="space-y-4">
                 {!allChallengesCompleted ? (
-                  <div className="py-4">
-                    <p className="text-gray-600 mb-4">Complete all 4 challenges to generate your certificate</p>
+                  <div className="py-4 space-y-3">
+                    <button
+                      onClick={generateCertificate}
+                      disabled
+                      className="inline-flex items-center space-x-2 bg-primary-600 text-white px-6 py-3 rounded-lg font-medium opacity-50 cursor-not-allowed"
+                    >
+                      <SafeIcon icon={FiAward} className="w-4 h-4" />
+                      <span>Generate Certificate</span>
+                    </button>
+                    <p className="text-gray-600">Complete all 4 challenges to generate your certificate</p>
                     <Link
                       to="/dashboard"
                       className="inline-flex items-center space-x-2 bg-primary-600 text-white px-6 py-3 rounded-lg font-medium hover:bg-primary-700 transition-colors"
@@ -394,7 +405,7 @@ const Conclusion = () => {
                       <SafeIcon icon={FiAward} className="w-5 h-5" />
                       <span className="font-medium">Certificate Ready!</span>
                     </div>
-                    <div className="flex flex-col sm:flex-row gap-4 justify-center">
+                    <div className="flex flex-col gap-4 justify-center items-center">
                       <button
                         onClick={downloadCertificate}
                         className="inline-flex items-center space-x-2 bg-primary-600 text-white px-6 py-3 rounded-lg font-medium hover:bg-primary-700 transition-colors shadow-lg"
@@ -402,41 +413,50 @@ const Conclusion = () => {
                         <SafeIcon icon={FiDownload} className="w-4 h-4" />
                         <span>Download Certificate</span>
                       </button>
-                      <a
-                        href={`https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent('[Insert Certificate Download]')}`}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="inline-flex items-center space-x-2 bg-[#0A66C2] text-white px-6 py-3 rounded-lg font-medium hover:opacity-90 transition-colors"
-                      >
-                        <FaLinkedin className="w-4 h-4" />
-                        <span>Share on LinkedIn</span>
-                      </a>
-                      <a
-                        href={`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent('[Insert Certificate Download]')}`}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="inline-flex items-center space-x-2 bg-[#1877F2] text-white px-6 py-3 rounded-lg font-medium hover:opacity-90 transition-colors"
-                      >
-                        <FaFacebook className="w-4 h-4" />
-                        <span>Share on Facebook</span>
-                      </a>
-                      <a
-                        href={`https://twitter.com/intent/tweet?text=${encodeURIComponent('I completed the Reliability Navigator simulation! #ReliabilityNavigator #APLearningSystems')}%20&url=${encodeURIComponent('[Insert Certificate Download]')}`}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="inline-flex items-center space-x-2 bg-black text-white px-6 py-3 rounded-lg font-medium hover:opacity-90 transition-colors"
-                      >
-                        <FaXTwitter className="w-4 h-4" />
-                        <span>Share on X</span>
-                      </a>
+                      {/* Social Share Section styled like the reference */}
+                      <div className="mt-6 pt-6 border-t border-gray-200 w-full">
+                        <p className="text-sm font-medium text-gray-700 mb-3 text-center">Share your achievement:</p>
+                        <div className="flex flex-wrap items-center justify-center gap-3">
+                          <a
+                            href={`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent('https://example.com/')}&quote=${encodeURIComponent('I just completed the Reliability Navigator training simulation and earned the Reliability Navigator Expert certificate! [Insert Certificate Download]')}`}
+                            target="_blank"
+                            rel="noreferrer"
+                            className="inline-flex items-center space-x-2 bg-[#1877F2] hover:bg-[#125ec0] text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors shadow"
+                            aria-label="Share on Facebook"
+                          >
+                            <FaFacebook className="w-4 h-4" />
+                            <span>Facebook</span>
+                          </a>
+                          <a
+                            href={`https://twitter.com/intent/tweet?text=${encodeURIComponent('I just completed the Reliability Navigator training simulation and earned the Reliability Navigator Expert certificate! [Insert Certificate Download]')}`}
+                            target="_blank"
+                            rel="noreferrer"
+                            className="inline-flex items-center space-x-2 bg-black hover:bg-neutral-800 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors shadow"
+                            aria-label="Share on X"
+                          >
+                            <FaXTwitter className="w-4 h-4" />
+                            <span>X</span>
+                          </a>
+                          <a
+                            href={`https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent('https://example.com/')}`}
+                            target="_blank"
+                            rel="noreferrer"
+                            className="inline-flex items-center space-x-2 bg-[#0A66C2] hover:bg-[#084f94] text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors shadow"
+                            aria-label="Share on LinkedIn"
+                          >
+                            <FaLinkedin className="w-4 h-4" />
+                            <span>LinkedIn</span>
+                          </a>
+                        </div>
+                      </div>
+                      {/* Keep Copy Share Text for convenience */}
                       <button
                         onClick={() => {
-                          const shareText = `I completed the Reliability Navigator simulation and earned my certificate!\n\nDownload: [Insert Certificate Download]\n\n#ReliabilityNavigator #APLearningSystems`
+                          const shareText = 'I just completed the Reliability Navigator training simulation and earned the Reliability Navigator Expert certificate! [Insert Certificate Download]'
                           navigator.clipboard.writeText(shareText)
                         }}
-                        className="inline-flex items-center space-x-2 bg-success-600 text-white px-6 py-3 rounded-lg font-medium hover:bg-success-700 transition-colors"
+                        className="inline-flex items-center space-x-2 bg-gray-200 text-gray-800 px-4 py-2 rounded-lg text-sm font-medium hover:bg-gray-300 transition-colors shadow"
                       >
-                        <SafeIcon icon={FiShare2} className="w-4 h-4" />
                         <span>Copy Share Text</span>
                       </button>
                     </div>
@@ -445,11 +465,21 @@ const Conclusion = () => {
                   <div className="py-4">
                     <button
                       onClick={generateCertificate}
-                      className="inline-flex items-center space-x-2 bg-primary-600 text-white px-6 py-3 rounded-lg font-medium hover:bg-primary-700 transition-colors"
+                      disabled={generating || progress.completedChallenges < progress.totalChallenges}
+                      className="inline-flex items-center space-x-2 bg-primary-600 text-white px-6 py-3 rounded-lg font-medium hover:bg-primary-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
                     >
                       <SafeIcon icon={FiAward} className="w-4 h-4" />
-                      <span>Generate Certificate</span>
+                      <span>{generating ? 'Generating...' : 'Generate Certificate'}</span>
                     </button>
+                    {certificateError && (
+                      <p className="text-sm text-red-600 mt-2">
+                        {certificateError}
+                        <button
+                          onClick={generateCertificate}
+                          className="ml-2 underline text-red-700 hover:text-red-800"
+                        >Retry</button>
+                      </p>
+                    )}
                   </div>
                 )}
               </div>
