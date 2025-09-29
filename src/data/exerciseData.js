@@ -2,7 +2,7 @@ export const exerciseContent = {
   1: {
     id: 1,
     title: "Reliability Metrics Worksheet",
-    description: "Calculate key reliability metrics and develop a maintenance strategy recommendation for the pump failure analysis:",
+  description: "Calculate key reliability metrics and develop a maintenance strategy recommendation for the pump failure analysis.",
     fields: [
       {
         id: 'total_operating_time',
@@ -95,7 +95,7 @@ export const exerciseContent = {
   2: {
     id: 2,
     title: "Technical Requirement Translation Matrix",
-    description: "Translate Sarah's technical requirements into field-executable work steps for the heat exchanger cleaning:",
+  description: "Translate Sarah's technical requirements into field-executable work steps for the heat exchanger cleaning.",
     fields: [
       {
         id: 'citric_acid_cleaning',
@@ -199,7 +199,7 @@ export const exerciseContent = {
   3: {
     id: 3,
     title: "Context Adaptation Planning Matrix",
-    description: "Design appropriate planning approaches for different maintenance contexts while maintaining reliability principles:",
+  description: "Design appropriate planning approaches for different maintenance contexts while maintaining reliability principles.",
     fields: [
       {
         id: 'planning_horizon_routine',
@@ -303,7 +303,7 @@ export const exerciseContent = {
   4: {
     id: 4,
     title: "Work Package Enhancement Worksheet",
-    description: "Transform the basic seal replacement into a reliability-enhanced work package that addresses chronic failure issues:",
+  description: "Transform the basic seal replacement into a reliability-enhanced work package that addresses chronic failure issues.",
     fields: [
       {
         id: 'pre_installation_step1',

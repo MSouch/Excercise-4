@@ -194,8 +194,7 @@ const ExerciseForm=({exercise,onComplete})=> {
             <input
               id={field.id}
               type="number"
-              min="1"
-              max="10"
+              inputMode="numeric"
               value={value}
               onChange={(e)=> handleInputChange(field.id,e.target.value)}
               className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent ${
@@ -308,7 +307,7 @@ const ExerciseForm=({exercise,onComplete})=> {
           <p className="text-success-100">{exercise.description}</p>
           <div className="mt-3 text-success-100 text-sm">
             <SafeIcon icon={FiAlertCircle} className="w-4 h-4 inline mr-1" />
-            All fields are required to proceed to the next challenge
+            All fields are required to proceed to the next challenge.
           </div>
         </div>
 

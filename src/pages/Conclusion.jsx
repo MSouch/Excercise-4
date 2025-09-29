@@ -369,11 +369,6 @@ const Conclusion = () => {
                 <p className="text-primary-100 text-sm mt-2">
                   Completion Code: RPN0400
                 </p>
-                {user?.email && (
-                  <p className="text-primary-100 text-xs mt-2">
-                    Issued to: {user.email}
-                  </p>
-                )}
               </div>
 
               <div className="space-y-4">
@@ -514,7 +509,7 @@ const Conclusion = () => {
                   <li><a href="#" className="underline">Pursue advanced reliability engineering certifications</a></li>
                   <li><a href="#" className="underline">Lead organizational reliability improvement initiatives</a></li>
                   <li><a href="#" className="underline">Mentor other planners in reliability integration techniques</a></li>
-                  <li><a href="#" className="underline">Explore other Navigator Series training modules</a></li>
+                  <li><a href="#" className="underline">Explore other Navigator Series training courses</a></li>
                 </ul>
               </div>
             </div>

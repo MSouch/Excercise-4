@@ -61,7 +61,7 @@ const Home = () => {
             animate={{opacity: 1, y: 0}}
             transition={{delay: 0.2, duration: 0.6}}
           >
-            <h2 className="text-3xl font-bold text-gray-900 mb-4">Your Mission</h2>
+            <h2 className="text-3xl font-bold text-gray-900 mb-4">Your mission</h2>
             <p className="text-lg text-gray-600 max-w-3xl mx-auto">
               Master the essential skills for integrating reliability principles into your planning work. Production losses from unplanned downtime cost $2.3 million per day, and your role as a planner directly impacts equipment reliability outcomes.
             </p>
